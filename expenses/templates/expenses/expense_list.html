@@ -6,6 +6,8 @@
         {% if month %}
             / {{ month }}
         {% endif %}
+    {% elif category %}
+        Expenses for {{ category }}
     {% else %}
         Home
     {% endif %}
@@ -14,7 +16,7 @@
 {% block content %}
 
     <h3>
-        {{ objects.count }} expenses (total: {{ total }})
+        {{ objects.count }} expense{% if objects.count != 1 %}s{% endif %} (total: {{ total }})
     </h3>
 
     <ul>

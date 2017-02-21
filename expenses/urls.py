@@ -10,6 +10,9 @@ urlpatterns = [
     url(r'^month/(20[0-9][0-9])/$', views.list, name="year"),
     url(r'^month/(20[0-9][0-9])/(1?[0-9])/$', views.list, name="month"),
 
+    url(r'^category/$', views.list_categories, name="categories"),
+    url(r'^category/([0-9]+)/$', views.list_by_category, name="category"),
+
     url(r'^create/$', views.create, name="create"),
     url(r'^([0-9]+)/$', views.detail, name="detail"),
     url(r'^([0-9]+)/edit/$', views.update, name="update"),

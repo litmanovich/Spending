@@ -122,3 +122,23 @@ def send_feedback(request):
     return render(request, "expenses/feedback_form.html", {
         'form': form,
     })
+
+@login_required
+def list_categories(request):
+    qs = models.Category.objects.filter(
+        user=request.user
+    ).order_by('name')
+    return render(request, "expenses/expense_categories.html", {
+        'categories': qs,
+    })
+
+@login_required
+def list_by_category(request, id):
+    c = get_object_or_404(models.Category, id=id, user=request.user)
+    qs = models.Expense.objects.filter(user=request.user, category=id)
+    total = sum(o.amount for o in qs)
+    return render(request, "expenses/expense_list.html", {
+        'category': c.name,
+        'total': total,
+        'objects': qs,
+    })
