@@ -32,31 +32,49 @@ class Command(BaseCommand):
     help = "Adds demo data to database."
 
     def add_arguments(self, parser):
-        parser.add_argument('n', type=int)
+        parser.add_argument('-n', '--number', type=int)
+        parser.add_argument('--clear', action='store_true', help='Remove all data', default=False)
 
     def handle(self, *args, **options):
-        n = options['n']
+        if not options['clear'] and not options['number']:
+            self.print_help('make_data', 'help')
+            return
 
-        users = []
-        for i in range(1, 6):
-            user, created = User.objects.get_or_create(
-                username='user{}'.format(i),
-            )
-            user.set_password("secret1234")
-            user.save()
-            users.append(user)
+        if options['clear']:
+            User.objects.all().delete()
+            print("Removed all data")
 
-        for i in range(n):
-            o = models.Expense(
-                user=random.choice(users),
-                date=get_random_date(),
-                amount="{:.2f}".format(random.uniform(1, 100)),
-                title="{} {}".format(silly.adjective(), silly.noun()).title(),
-                description=get_paragraph(1, 3),
-            )
-            o.full_clean()
-            o.save()
-            for i in range(random.randint(0, 5)):
-                o.comments.create(
-                    content=get_paragraph(1, 4),
+        if options['number']:
+            n = options['number']
+            users = []
+            added = 0
+            for i in range(1, 6):
+                user, created = User.objects.get_or_create(
+                    username='user{}'.format(i),
                 )
+                user.set_password("secret1234")
+                user.save()
+                users.append(user)
+                if created:
+                    added += 1
+                    for j in range(random.randint(1, 5)):
+                        c, created = models.Category.objects.get_or_create(user=user, name=silly.noun().title())
+                        c.save()
+            print("Added {} users".format(added))
+
+            for i in range(n):
+                o = models.Expense(
+                    user=random.choice(users),
+                    date=get_random_date(),
+                    amount="{:.2f}".format(random.uniform(1, 100)),
+                    title="{} {}".format(silly.adjective(), silly.noun()).title(),
+                    description=get_paragraph(1, 3),
+                )
+                o.full_clean()
+                o.save()
+                for i in range(random.randint(0, 5)):
+                    o.comments.create(
+                        content=get_paragraph(1, 4),
+                    )
+
+            print("Added {} expenses".format(n))

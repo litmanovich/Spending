@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from . import models
+import calendar
+import silly
+import random
 
 
 class ExpensesTests(TestCase):
@@ -56,3 +59,63 @@ class ExpensesTests(TestCase):
         )
 
         self.assertEquals(qs.count(), 3)
+
+    def test_categories(self):
+        n = User.objects.count()
+        user1, created = User.objects.get_or_create(username='Danny')
+        user1.save()
+        self.assertEquals(User.objects.all().count(), n + 1)
+
+        cat_food = models.Category(user=user1, name='Food')
+        cat_food.save()
+        cat_rent = models.Category(user=user1, name='Rent')
+        cat_rent.save()
+        cat_utilities = models.Category(user=user1, name='Utilities')
+        cat_utilities.save()
+        self.assertEquals(models.Category.objects.filter(user=user1).count(), 3)
+
+        o = models.Expense(
+            user=user1,
+            date="2017-02-20",
+            amount="10.19",
+            title="Pizza",
+            description="Pepperoni",
+            category=cat_food,
+        )
+        o.save()
+
+        for i in range(1, 13):
+            o = models.Expense(
+                user=user1,
+                date="2017-{:02}-20".format(i),
+                amount="30.55",
+                title="Electricity bill for {}".format(calendar.month_name[i]),
+                description="Electricity bill",
+                category=cat_utilities,
+            )
+            o.save()
+
+        self.assertEquals(models.Expense.objects.filter(user=user1, category=cat_food).count(), 1)
+        self.assertEquals(models.Expense.objects.filter(user=user1, category=cat_utilities).count(), 12)
+        e = models.Expense.objects.get(user=user1, date="2017-06-20")
+        self.assertEquals(e.title, "Electricity bill for June")
+
+        user2, created = User.objects.get_or_create(username='Sarah')
+        cats = []
+        for cname in 'Car', 'Parking', 'Food':
+            c = models.Category(user=user2, name=cname)
+            c.save()
+            cats.append(c)
+        for i in range(100):
+            o = models.Expense(
+                user=user2,
+                date="2017-01-01",
+                amount="10.01",
+                title=silly.noun().title(),
+                description=silly.sentence(),
+                category=cats[random.randint(0, 2)],
+            )
+            o.save()
+        self.assertEquals(models.Expense.objects.filter(user=user2).count(), 100)
+        self.assertGreaterEqual(models.Expense.objects.filter(user=user2, category=cats[1]).count(), 0)
+        self.assertLessEqual(models.Expense.objects.filter(user=user2, category=cats[1]).count(), 100)

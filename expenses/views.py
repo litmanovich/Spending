@@ -57,6 +57,12 @@ def detail(request, id):
     })
 
 
+def get_expense_form(user, instance=None):
+    form = ExpenseForm(instance=instance)
+    form.fields['category'].queryset = models.Category.objects.filter(user=user)
+    return form
+
+
 @login_required
 def create(request):
     if request.method == "POST":
@@ -66,7 +72,7 @@ def create(request):
             o = form.save()
             return redirect(reverse("expenses:detail", args=(o.id,)))
     else:
-        form = ExpenseForm()
+        form = get_expense_form(request.user)
 
     return render(request, "expenses/expense_form.html", {
         'form': form,
@@ -82,7 +88,7 @@ def update(request, id):
             o = form.save()
             return redirect(reverse("expenses:detail", args=(o.id,)))
     else:
-        form = ExpenseForm(instance=o)
+        form = get_expense_form(request.user, instance=o)
 
     return render(request, "expenses/expense_form.html", {
         'form': form,
