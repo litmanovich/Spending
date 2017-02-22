@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from expenses.forms import ExpenseForm, FeebackForm, CommentForm
+from expenses.forms import ExpenseForm, FeebackForm, CommentForm, CategoryForm
 from . import models
 
 
@@ -123,6 +123,7 @@ def send_feedback(request):
         'form': form,
     })
 
+
 @login_required
 def list_categories(request):
     qs = models.Category.objects.filter(
@@ -131,6 +132,7 @@ def list_categories(request):
     return render(request, "expenses/expense_categories.html", {
         'categories': qs,
     })
+
 
 @login_required
 def list_by_category(request, id):
@@ -141,4 +143,19 @@ def list_by_category(request, id):
         'category': c.name,
         'total': total,
         'objects': qs,
+    })
+
+
+@login_required
+def create_category(request):
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.instance.user = request.user
+            form.save()
+            return redirect(reverse("expenses:categories"))
+    else:
+        form = CategoryForm()
+    return render(request, "expenses/category_form.html", {
+        'form': form,
     })

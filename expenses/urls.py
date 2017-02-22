@@ -12,6 +12,7 @@ urlpatterns = [
 
     url(r'^category/$', views.list_categories, name="categories"),
     url(r'^category/([0-9]+)/$', views.list_by_category, name="category"),
+    url(r'^create-category/$', views.create_category, name="create_category"),
 
     url(r'^create/$', views.create, name="create"),
     url(r'^([0-9]+)/$', views.detail, name="detail"),

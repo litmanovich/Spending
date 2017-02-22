@@ -19,8 +19,17 @@ class CommentForm(forms.ModelForm):
         )
 
 
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = models.Category
+        exclude = (
+            'user',
+        )
+
+
 class FeebackForm(forms.Form):
     email = forms.EmailField()
     subject = forms.CharField()
     description = forms.CharField(widget=forms.Textarea())
     phone = forms.CharField(required=False)
+
